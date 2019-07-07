@@ -10,8 +10,36 @@ using std::vector;
 
 vector<string> DecomposeIntoDictionaryWords(
     const string& domain, const unordered_set<string>& dictionary) {
-  // TODO - you fill in here.
-  return {};
+
+  std::map<string, bool> table;
+  std::map<string, std::vector<string> > table_strings;
+
+  for (int i=0; i<domain.size(); i++) {
+    string prefix = domain.substr(0, i+1);
+    if (dictionary.count(prefix)) {
+      table[prefix] = true;
+      table_strings[prefix] = {prefix};
+    }
+    else {
+      int j;
+      for (j=i; j>=0; j--) {
+        auto suffix_of_prefix = domain.substr(j, i-j+1);
+        auto prefix_of_prefix = domain.substr(0, j);
+        if (dictionary.count(suffix_of_prefix)) {
+          if (table[prefix_of_prefix] == true) {
+            table[prefix] = true;
+            table_strings[prefix] = table_strings[prefix_of_prefix];
+            table_strings[prefix].push_back(suffix_of_prefix);
+            break;
+          }
+        }
+      }
+      if (j < 0) {
+        table[prefix] = false;
+      }
+    }
+  }
+  return table_strings[domain];
 }
 void DecomposeIntoDictionaryWordsWrapper(
     TimedExecutor& executor, const string& domain,
